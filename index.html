@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>Employee Leave Form</title>
+</head>
+<body>
+  <header>Welcome to Employee Leave Form</header>
+  <main>
+    <!--EMPLOYEE DETAILS SECTION-->
+    <div>
+    <p>Date Today</p>
+    <input placeholder="Pick a Date" type="datetime-local" id="dateTimeLocal"> <br>
+    <!--MUST BE AUTO FILL-->
+    <p>Employee Details</p>
+      <select id="countries">
+        <option value="">Employee Name</option>
+        <option value="US">United States</option>
+        <option value="UK">United Kingdom</option>
+        <option value="CA">Canada</option>
+      </select>
+      <br>
+    <input type="text" id="capital" placeholder="Employee Department">
+      <br>
+    <input type="text" id="job"placeholder="Employee Job Position">
+    </div>
+    
+    <!--LEAVE DETAILS-->
+
+    <!--TYPE OF ABSENCE-->
+    <div>
+      <label> Select type of Absence <br>
+        <input type="radio" name="Holiday" id="holiday" value="Holiday"/>
+        Holiday
+      </label>
+      <label> 
+        <input type="radio" name="Holiday" id="holiday" value="Holiday"/>
+        Under time
+      </label>
+    </div>
+    <!--LEAVE REQUEST-->
+    <div>
+      <label> Leave Request for<br>
+        <input type="radio" name="Holiday" id="holiday" value="Holiday"/>
+        Days
+      </label>
+      <label> 
+        <input type="radio" name="Holiday" id="holiday" value="Holiday"/>
+        Hours
+      </label>
+    </div>
+    <!--START TO END DATE-->
+    <div>
+      <label> From (Start Date) <br>
+      <input placeholder="Pick a Date" type="datetime-local" id="dateTimeLocal">
+      </label> <br>
+      <label> To (End Date) <br>
+      <input placeholder="Pick a Date" type="datetime-local" id="dateTimeLocal">
+      </label>
+    </div>
+    <!--TYPE OF LEAVE REQUEST-->
+    <div>
+      <label>Select Type of Leave Request<br>
+        <input type="radio" name="Holiday" id="holiday" value="Holiday"/>
+        Days
+      </label>
+      <label> 
+        <input type="radio" name="Holiday" id="holiday" value="Holiday"/>
+        Earned Leave
+      </label>
+      <label> 
+        <input type="radio" name="Holiday" id="holiday" value="Holiday"/>
+        Sick Leave
+      </label>      <label> 
+        <input type="radio" name="Holiday" id="holiday" value="Holiday"/>
+        Others:
+      </label>
+      <input type="text" placeholder="Input Others">
+    </div> <br>
+    <!--REASON & IMAGE-->
+    <div>
+      <textarea name="" id="" cols="40" rows="10"></textarea>
+      <form action="">
+        <label for="img">Upload E-Signature</label>
+        <input type="file" id="img" name="img" accept="image/*">
+        <input type="submit">   
+      </form>
+    </div>
+
+    
+    <script src="main.js"></script>
+ </main>
+</body>
+</html>
