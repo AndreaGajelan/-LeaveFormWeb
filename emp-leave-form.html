@@ -12,7 +12,7 @@
     </style>
   </head>
   <body>
-    <section class="container">
+    <div class="container">
       <header class="leave-header">Leave Application Form</header>
       <form action="connection.php" class="form" method="POST">
         <!--FILED DATE-->
@@ -144,12 +144,15 @@
           <textarea name="reason" rows="10" placeholder="Your Message"></textarea>
       </div>
       <div class="sub-can-btn">
-          <button class="cancel-btn">Cancel</button>
+          <button class="cancel-btn"><a href="empDashboard.php">Cancel</a></button>
           <!--<button class="submit-btn" onclick="calculateHours()" >Submit</button>-->
           <button class="submit-btn" name="submit" type="submit" >Submit</button>
       </div>
       </form>
-    </section>
+
+    </div>
+
+
     <script>
       function showInput(select) {
         var otherInput = document.getElementById("textFieldContainer");

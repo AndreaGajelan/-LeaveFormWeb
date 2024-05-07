@@ -5,23 +5,28 @@
     font-family: Arial, Helvetica, sans-serif
 }
 
-body {
+/* body {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
     background: rgb(41, 61, 171);
-}
+} */
 
 .container {
-    position: relative;
     max-width: 500px;
     width: 100%;
-    background: #fff;
+    background: #ffffff;
     padding: 25px;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    
+}
+.overall-container{
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
 }
 
 /* LEAVE APPLICATION FORM HEADER */
@@ -186,6 +191,13 @@ label {
     border: none;
     margin-right: 15px;
     border-radius: 3px;
+    text-decoration: none;
+    color: white;
+
+}
+.cancel-btn a {
+    text-decoration: none;
+    color: white;
 }
 
 .until {

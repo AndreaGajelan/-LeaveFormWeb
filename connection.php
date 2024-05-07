@@ -1,5 +1,11 @@
 <?php 
-if(isset($_POST['submit'])){
+require 'db.php';
+
+if (!empty($_SESSION['id'])) {
+    header("Location: empDashboard.php");
+}
+
+if (isset($_POST['submit'])) {
     $dateToday = $_POST['dateToday'];
     $empId = $_POST['empId'];
     $fullName = $_POST['fullName'];
@@ -13,7 +19,7 @@ if(isset($_POST['submit'])){
     $otherLeaveType = $_POST['otherLeaveType'];
     $startDate = new DateTime($_POST['startDate']);
     $endDate = new DateTime($_POST['endDate']);
-    $reason= $_POST['reason'];
+    $reason = $_POST['reason'];
     $daysToHrs = $_POST['daysToHrs'];
 
     $host = 'localhost';
@@ -23,8 +29,8 @@ if(isset($_POST['submit'])){
 
     $conn = mysqli_connect($host, $user, $pass, $dbname);
 
-    //LEAVE TYPE N/A
-    $naLeaveTypes = ['Vacation Leave', 'Paternity Leave', 'Bereavement Leave', 'Sick Leave', 'Parental Leave']; 
+    // LEAVE TYPE N/A
+    $naLeaveTypes = ['Vacation Leave', 'Paternity Leave', 'Bereavement Leave', 'Sick Leave', 'Parental Leave'];
     
     if (in_array($leaveType, $naLeaveTypes)) {
         $otherLeaveType = 'NA'; 
@@ -34,17 +40,6 @@ if(isset($_POST['submit'])){
     $interval = $startDate->diff($endDate);
     $daysToHrs = $interval->days * 24 + $interval->h;
 
-    //echo "Start Date: " . $_POST['startDate'] . "<br>";
-    //echo "End Date: " . $_POST['endDate'] . "<br>";
-    //echo "Calculated Hours: " . $daysToHrs . "<br>";
-
-    $host = 'localhost';
-    $user = 'root';
-    $pass = '';
-    $dbname = 'leave-db';
-
-    $conn = mysqli_connect($host, $user, $pass, $dbname);
-
     $startDateFormatted = $startDate->format('Y-m-d H:i:s');
     $endDateFormatted = $endDate->format('Y-m-d H:i:s');
 
@@ -52,11 +47,12 @@ if(isset($_POST['submit'])){
             VALUES ('$dateToday','$empId','$fullName','$company','$dept','$absenceType','$startTime','$endTime','$pay','$leaveType','$otherLeaveType','$startDateFormatted','$endDateFormatted','$reason','$daysToHrs')";
 
     if (mysqli_query($conn, $sql)) {
-        echo "Record inserted successfully";
+        echo "Code reaches this point"; // Add this line
+        echo "<script>alert ('Registration Succesfulssssss'); </script>";
     } else {
         echo "Error: " . $sql . "<br>" . mysqli_error($conn);
     }
-
+    
     mysqli_close($conn);
 }
 ?>
