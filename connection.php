@@ -8,9 +8,14 @@ if (!empty($_SESSION['id'])) {
 if (isset($_POST['submit'])) {
     $dateToday = $_POST['dateToday'];
     $empId = $_POST['empId'];
-    $fullName = $_POST['fullName'];
+    $fName = $_POST['fName'];
+    $mName = $_POST['mName'];
+    $lName = $_POST['lName'];
+    $sName = $_POST['sName'];
     $company = $_POST['company'];
+    $manager = $_POST['manager'];
     $dept = $_POST['dept'];
+    $position = $_POST['position'];
     $absenceType = $_POST['absenceType'];
     $startTime = $_POST['startTime'];
     $endTime = $_POST['endTime'];
@@ -20,7 +25,7 @@ if (isset($_POST['submit'])) {
     $startDate = new DateTime($_POST['startDate']);
     $endDate = new DateTime($_POST['endDate']);
     $reason = $_POST['reason'];
-    $daysToHrs = $_POST['daysToHrs'];
+    $daysToHrs = $_POST['dayToHrs'];
 
     $host = 'localhost';
     $user = 'root';
@@ -38,13 +43,13 @@ if (isset($_POST['submit'])) {
 
     // TOTAL HOURS BETWEEN START AND END DATE
     $interval = $startDate->diff($endDate);
-    $daysToHrs = $interval->days * 24 + $interval->h;
+    $dayToHrs = $interval->days * 8 + $interval->h;
 
     $startDateFormatted = $startDate->format('Y-m-d H:i:s');
     $endDateFormatted = $endDate->format('Y-m-d H:i:s');
 
-    $sql = "INSERT INTO leavetable (dateToday, empId, fullName, company, dept, absenceType, startTime, endTime, pay, leaveType, otherLeaveType, startDate, endDate, reason, daysToHrs) 
-            VALUES ('$dateToday','$empId','$fullName','$company','$dept','$absenceType','$startTime','$endTime','$pay','$leaveType','$otherLeaveType','$startDateFormatted','$endDateFormatted','$reason','$daysToHrs')";
+    $sql = "INSERT INTO leavetable (dateToday, empId, fName, mName, lName, sName, company, manager, dept, position, absenceType, startTime, endTime, pay, leaveType, otherLeaveType, startDate, endDate, reason, dayToHrs) 
+            VALUES ('$dateToday','$empId','$fName', '$mName','$lName','$sName','$company','$manager','$dept','$position','$absenceType','$startTime','$endTime','$pay','$leaveType','$otherLeaveType','$startDateFormatted','$endDateFormatted','$reason','$dayToHrs')";
 
     if (mysqli_query($conn, $sql)) {
         echo "Code reaches this point"; // Add this line

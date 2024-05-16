@@ -1,9 +1,9 @@
 <?php 
 require 'db.php';
 if(isset($_POST["submit"])){
-    $userName = $_POST["userName"];
+    $empId = $_POST["empId"];
     $password = $_POST["password"];
-    $result = mysqli_query($conn, "SELECT * FROM form WHERE userName = '$userName'");
+    $result = mysqli_query($conn, "SELECT * FROM form WHERE empId = '$empId'");
     $row = mysqli_fetch_assoc($result);
     if(mysqli_num_rows($result) > 0){
         if($password == $row["password"]){
@@ -43,8 +43,8 @@ if(isset($_POST["submit"])){
             </div>
 
             <div class="user-container">
-                <label>Username</label>
-                <input type="text" name="userName" placeholder="Enter your Email" > <!-- added name="username" -->
+                <label>Enter ID</label>
+                <input type="text" name="empId" placeholder="Enter your Email" oninput="this.value = this.value.toUpperCase()"> <!-- added name="username" -->
             </div>
             
             <div class="pass-container">

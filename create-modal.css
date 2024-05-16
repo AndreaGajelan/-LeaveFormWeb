@@ -14,15 +14,16 @@ body{
   
   .popup2 .content2 {
     position: absolute;
-    top: 740px;
+    top: 850px;
     left: 50%;
     transform: translate(-50%, -50%) scale(0);
     background-color: rgb(41, 61, 171);
     width: 850px;
-    height: 1450px;
+    height: 1750px;
     z-index: 2;
     padding: 20px;
     box-sizing: border-box;
+    
   }
   .viewleave-container2{
     display: flex;
