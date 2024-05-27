@@ -28,7 +28,12 @@ if (isset($_POST['submit'])) {
     $pass = '';
     $dbname = 'leave-db';
 
-    $conn = mysqli_connect($host, $user, $pass, $dbname);
+    $conn = new mysqli($host, $user, $pass, $dbname);
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 
     // LEAVE TYPE N/A
     $naLeaveTypes = ['Vacation Leave', 'Paternity Leave', 'Bereavement Leave', 'Sick Leave', 'Parental Leave'];
@@ -41,35 +46,33 @@ if (isset($_POST['submit'])) {
     $endDateTime = new DateTime($_POST['endDate'] . ' ' . $_POST['endTime']);
 
     // Calculate total hours
-    
-    // Calculate total hours
-$totalHours = 0;
+    $totalHours = 0;
 
-$currentDate = clone $startDateTime;
-while ($currentDate <= $endDateTime) {
-    if ($currentDate->format('N') != 7) { // Exclude Sundays
-        $startTime = '00:00:00';
-        $endTime = '23:59:59';
+    $currentDate = clone $startDateTime;
+    while ($currentDate <= $endDateTime) {
+        if ($currentDate->format('N') != 7) { // Exclude Sundays
+            if ($currentDate->format('Y-m-d') === $startDateTime->format('Y-m-d')) {
+                // First day
+                $startOfDay = $startDateTime;
+            } else {
+                $startOfDay = new DateTime($currentDate->format('Y-m-d') . ' 00:00:00');
+            }
 
-        if ($currentDate->format('Y-m-d') === $startDateTime->format('Y-m-d')) {
-            // First day
-            $startTime = $startDateTime->format('H:i:s');
-        } elseif ($currentDate->format('Y-m-d') === $endDateTime->format('Y-m-d')) {
-            // Last day
-            $endTime = $endDateTime->format('H:i:s');
+            if ($currentDate->format('Y-m-d') === $endDateTime->format('Y-m-d')) {
+                // Last day
+                $endOfDay = $endDateTime;
+            } else {
+                $endOfDay = new DateTime($currentDate->format('Y-m-d') . ' 23:59:59');
+            }
+
+            // Calculate hours for the current day
+            $hoursToAdd = ($endOfDay->getTimestamp() - $startOfDay->getTimestamp()) / 3600;
+            $totalHours += min(8, $hoursToAdd);
         }
 
-        $startOfDay = new DateTime($currentDate->format('Y-m-d') . ' ' . $startTime);
-        $endOfDay = new DateTime($currentDate->format('Y-m-d') . ' ' . $endTime);
-
-        // Calculate hours for the current day
-        $hoursToAdd = min(8, $endOfDay->diff($startOfDay)->h + 1);
-        $totalHours += $hoursToAdd;
+        // Move to the next day
+        $currentDate->modify('+1 day');
     }
-
-    // Move to the next day
-    $currentDate->modify('+1 day');
-}
 
     $startDateFormatted = $startDateTime->format('Y-m-d H:i:s');
     $endDateFormatted = $endDateTime->format('Y-m-d H:i:s');
@@ -78,16 +81,17 @@ while ($currentDate <= $endDateTime) {
     $pay = "Pending";   
     $remarks = "Pending";    
 
-    $sql = "INSERT INTO jcleavetable (id, dateToday, empId, fName, mName, lName, sName, company, manager, dept, position, absenceType, startTime, endTime, pay, leaveType, otherLeaveType, startDate, endDate, reason, dayToHrs, updateStatus, remarks) 
-            VALUES ('$id', '$dateToday','$empId','$fName', '$mName','$lName','$sName','$company','$manager','$dept','$position','$absenceType','$startDateFormatted','$endDateFormatted','$pay','$leaveType','$otherLeaveType','$startDateFormatted','$endDateFormatted','$reason','$totalHours', '$updateStatus', '$remarks')";
+    $stmt = $conn->prepare("INSERT INTO jcleavetable (dateToday, empId, fName, mName, lName, sName, company, manager, dept, position, absenceType, startTime, endTime, pay, leaveType, otherLeaveType, startDate, endDate, reason, dayToHrs, updateStatus, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssssssssssssssssssss", $dateToday, $empId, $fName, $mName, $lName, $sName, $company, $manager, $dept, $position, $absenceType, $startDateFormatted, $endDateFormatted, $pay, $leaveType, $otherLeaveType, $startDateFormatted, $endDateFormatted, $reason, $totalHours, $updateStatus, $remarks);
 
-    if (mysqli_query($conn, $sql)) {
-        echo "Code reaches this point"; // Add this line
+    if ($stmt->execute()) {
+        echo "Code reaches this point";
         echo "<script>alert ('Registration Successful!'); </script>";
     } else {
-        echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+        echo "Error: " . $stmt->error;
     }
-    
-    mysqli_close($conn);
+
+    $stmt->close();
+    $conn->close();
 }
 ?>
