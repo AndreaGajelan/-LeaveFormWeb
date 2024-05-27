@@ -1,62 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <link rel="stylesheet" href="admin-panel.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leave Requests</title>
+<link rel="stylesheet" href="empDashboard.css">
+<link rel="stylesheet" href="admin-panel.css">
 </head>
-<body>
-  <nav class="admin-nav"> 
-    <div class="nav-features">
-    <ul>
-      <li class="leave-admin"><p class="leave-admin-p">Admin</p></li>
-      <li class="view-emp"><a href="#">View Employees</a></li>
-      <li class="view-leave"><a href="#">View Leave History </a></li>
-      <li class="logout"><button class="logout-btn">Log Out</button></li>
-    </ul>
-    </div>
-  </nav>
 
-  <div class="emp-tablec-container">
-    <table class="emp-table">
-      <tr class="emp-cell-header">
-        <th>Date Filed</th>
-        <th>Employee ID</th>
-        <th>Full Name</th>
-        <th>Company</th>
-        <th>Absence</th>
-        <th>Leave Type</th>
-        <th>Start Date</th>
-        <th>End Date</th>
-        <th>Start Time</th>
-        <th>End Time</th>
-        <th>Reason</th>
-        <th>Status</th>
-      </tr>
-      <tr>
-        <td>04/16/2024</td>
-        <td>EMP123</td>
-        <td>John Doe</td>
-        <td>Anyhow</td>
-        <td>Whole Day</td>
-        <td>Vacation Leave</td>
-        <td>04/20/2024</td>
-        <td>04/25/2024</td>
-        <td>10:00 AM</td>
-        <td>4:00 AM</td>
-        <td>Got Sick</td>
-        <td>
-          <button>Approve</button>
-          <button>Reject</button>
-        </td>
-      </tr>
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-    </table>
-  </div>
+<header class="header-container">
+    <div class="logo">
+        <img src="logo.png" alt="Logo">
+    </div>
+    
+    <div class="search-container">
+    <form action="search.php" method="GET">
+        <input type="text" placeholder="Search by ID..." name="search">
+        <button  class="search-btn" type="submit">Search</button>
+    </form>
+    </div>
+    
+    <div class="left-navigations">
+        <button class="logout-btn"><a href="logout.php">Logout</a></button>
+    </div>
+</header>
+
+<body>
+
+<!--EMP ID MODAL EACH ROW FOR UPDATING (APPROVE OR REJECT)-->
+<?php
+require 'db.php';
+if (empty($_SESSION["id"])) {
+    header("Location: login.php");
+    exit(); // Stop further execution
+}
+
+$id = $_SESSION["id"];
+$result = mysqli_query($conn, "SELECT * FROM jcleavetable WHERE id = $id");
+$row = mysqli_fetch_assoc($result);
+
+function generateModalContent($row) {
+  
+  $modalId = "modal" . $row["id"];
+  $remarksFieldId = "remarks" . $row["id"];
+  $remarksLabelId = "remarksLabel" . $row["id"];
+  $rejectRadioId = "reject" . $row["id"];
+  
+  echo "<div class='modal-content'>";
+  echo "<span class='close' onclick='closeViewModal(\"$modalId\")'>&times;</span>";
+
+  echo "<h2>Leave Details</h2>";
+  echo "<p><strong>ID: </strong>" . $row["id"] . "</p>";
+  echo "<p><strong>Filed Date:</strong> " . $row["dateToday"] . "</p>";
+  echo "<p><strong>Employee Id:</strong> " . $row["empId"] . "</p>";
+  echo "<p><strong>Full Name:</strong> " . $row["fName"] . " " . $row["mName"] . " " . $row["lName"] . " " . $row["sName"] . "</p>";
+  echo "<p><strong>Company:</strong> " . $row["company"] . "</p>";
+  echo "<p><strong>Department:</strong> " . (isset($row["dept"]) ? $row["dept"] : '') . "</p>";
+  echo "<p><strong>Position:</strong> " . $row["position"] . "</p>";
+  echo "<p><strong>Absence Type:</strong> " . $row["absenceType"] . "</p>";
+  echo "<p><strong>Start Time:</strong> " . $row["startTime"] . "</p>";
+  echo "<p><strong>End Time:</strong> " . $row["endTime"] . "</p>";
+  echo "<p><strong>Leave Type:</strong> " . $row["leaveType"] . "</p>";
+  echo "<p><strong>Other Leave Type:</strong> " . $row["otherLeaveType"] . "</p>";
+  echo "<p><strong>Start Date:</strong> " . $row["startDate"] . "</p>";
+  echo "<p><strong>End Date:</strong> " . $row["endDate"] . "</p>";
+  echo "<p><strong>Total Hours:</strong> " . $row["dayToHrs"] . "</p>";
+  echo "<p><strong>Reason:</strong> " . $row["reason"] . "</p>";
+
+  echo "<form id='updateStatus' method='post' action='updateStatus.php'>";
+  echo "<input type='hidden' name='id' value='" . $row["id"] . "'>";
+  echo "<input type='radio' id='Approved" . $row["id"] . "' name='status' value='Approved' onchange='toggleRemarks(\"$remarksFieldId\", \"$remarksLabelId\", \"$rejectRadioId\")'>";
+  echo "<label for='Approved" . $row["id"] . "'>Approve</label><br>";
+  echo "<input type='radio' id='$rejectRadioId' name='status' value='Rejected' onchange='toggleRemarks(\"$remarksFieldId\", \"$remarksLabelId\", \"$rejectRadioId\")'>";
+  echo "<label for='Rejected" . $row["id"] . "'>Reject</label><br><br>";
+  echo "<label for='$remarksFieldId' id='$remarksLabelId' style='display: none;'>Remarks:</label>";
+  echo "<textarea id='$remarksFieldId' name='remarks' placeholder='Write reason for rejection.' style='display: none;'></textarea><br>";
+  echo "<label for='pay'>Leave Pay:</label><br>";
+  echo "<input type='radio' id='paid" . $row["id"] . "' name='pay' value='Paid'>";
+  echo "<label for='paid" . $row["id"] . "'>Paid</label><br>";
+  echo "<input type='radio' id='unpaid" . $row["id"] . "' name='pay' value='Unpaid'>";
+  echo "<label for='unpaid" . $row["id"] . "'>Unpaid</label><br><br>";
+  echo "<button type='submit' name='submit'>Update Status</button>";
+  echo "</form>";
+  
+  echo "</div>";
+
+  echo "<script>
+      function toggleRemarks(remarksFieldId, remarksLabelId, rejectRadioId) {
+          var remarksField = document.getElementById(remarksFieldId);
+          var remarksLabel = document.getElementById(remarksLabelId);
+          var rejectRadio = document.getElementById(rejectRadioId);
+          if (rejectRadio.checked) {
+              remarksField.style.display = 'block';
+              remarksLabel.style.display = 'block';
+          } else {
+              remarksField.style.display = 'none';
+              remarksLabel.style.display = 'none';
+          }
+      }
+  </script>";
+}
+
+
+function generateModalContentApprovedRejected($row) {
+  
+    $modalId = "modal" . $row["id"];
+    $remarksFieldId = "remarks" . $row["id"];
+    $remarksLabelId = "remarksLabel" . $row["id"];
+    $rejectRadioId = "reject" . $row["id"];
+    
+    echo "<div class='modal-content'>";
+    echo "<span class='close' onclick='closeViewModal(\"$modalId\")'>&times;</span>";
+  
+    echo "<h2>Leave Details</h2>";
+    echo "<p><strong>ID: </strong>" . $row["id"] . "</p>";
+    echo "<p><strong>Filed Date:</strong> " . $row["dateToday"] . "</p>";
+    echo "<p><strong>Employee Id:</strong> " . $row["empId"] . "</p>";
+    echo "<p><strong>Full Name:</strong> " . $row["fName"] . " " . $row["mName"] . " " . $row["lName"] . " " . $row["sName"] . "</p>";
+    echo "<p><strong>Company:</strong> " . $row["company"] . "</p>";
+    echo "<p><strong>Department:</strong> " . (isset($row["dept"]) ? $row["dept"] : '') . "</p>";
+    echo "<p><strong>Position:</strong> " . $row["position"] . "</p>";
+    echo "<p><strong>Absence Type:</strong> " . $row["absenceType"] . "</p>";
+    echo "<p><strong>Start Time:</strong> " . $row["startTime"] . "</p>";
+    echo "<p><strong>End Time:</strong> " . $row["endTime"] . "</p>";
+    echo "<p><strong>Leave Type:</strong> " . $row["leaveType"] . "</p>";
+    echo "<p><strong>Other Leave Type:</strong> " . $row["otherLeaveType"] . "</p>";
+    echo "<p><strong>Start Date:</strong> " . $row["startDate"] . "</p>";
+    echo "<p><strong>End Date:</strong> " . $row["endDate"] . "</p>";
+    echo "<p><strong>Total Hours:</strong> " . $row["dayToHrs"] . "</p>";
+    echo "<p><strong>Reason:</strong> " . $row["reason"] . "</p>";
+    echo "<p><strong>Pay:</strong> " . $row["pay"] . "</p>";
+    echo "<p><strong>Status:</strong> " . $row["updateStatus"] . "</p>";
+    echo "<p><strong>Remarks:</strong> " . $row["remarks"] . "</p>";
+    
+    echo "</div>";
+  
+    echo "<script>
+        function toggleRemarks(remarksFieldId, remarksLabelId, rejectRadioId) {
+            var remarksField = document.getElementById(remarksFieldId);
+            var remarksLabel = document.getElementById(remarksLabelId);
+            var rejectRadio = document.getElementById(rejectRadioId);
+            if (rejectRadio.checked) {
+                remarksField.style.display = 'block';
+                remarksLabel.style.display = 'block';
+            } else {
+                remarksField.style.display = 'none';
+                remarksLabel.style.display = 'none';
+            }
+        }
+    </script>";
+  }
+  
+
+$updateStatus = ""; // Initialize $updateStatus
+
+if (isset($_GET['status'])) {
+    $updateStatus = $_GET['status'];
+}
+?>
+
+<div class="tab">
+  <button class="tablinks" onclick="openTab(event, 'Pending')">Pending</button>
+  <button class="tablinks" onclick="openTab(event, 'Approved')">Approved</button>
+  <button class="tablinks" onclick="openTab(event, 'Rejected')">Rejected</button>
+</div>
+
+<div id="Pending" class="tabcontent">
+  <h3>Pending Leave Requests</h3>
+  <?php
+
+  $id = $_SESSION["id"];
+  $sql = "SELECT * FROM jcleavetable WHERE updateStatus = 'Pending'";
+  $result = $conn->query($sql);
+
+  if ($result->num_rows > 0) {
+      echo "<table>";
+      echo "<tr><th>ID</th><th>Date Filed</th><th>Emp ID</th><th>Employee</th><th>Company</th><th>Absence</th><th>Leave Type</th><th>Start Date</th><th>End Date</th><th>Total Hours</th><th>Leave Pay</th><th>Update Status</th><th>Remarks</th></tr>";
+      while ($row = $result->fetch_assoc()) {
+        echo "<tr>";
+        echo "<td>" . $row["id"] . "</td>";
+        echo "<td>" . $row["dateToday"] . "</td>";
+        echo "<td><a href='javascript:void(0);' onclick='openViewModal(\"modal" . $row["id"] . "\")'>" . $row["empId"] . "</a></td>";
+        echo "<td>" . $row["fName"] . ' ' . $row['mName'] . ' ' . $row['lName'] . ' ' . $row['sName'];  "</td>";
+        echo "<td>" . $row["company"] . "</td>";
+        echo "<td>" . $row["absenceType"] . "</td>";
+        echo "<td>" . $row["leaveType"] . "</td>";
+        echo "<td>" . $row["startDate"] . "</td>";
+        echo "<td>" . $row["endDate"] . "</td>";
+        echo "<td>" . $row["dayToHrs"] . "</td>";
+        echo "<td>" . $row["pay"] . "</td>";
+        echo "<td>" . $row["updateStatus"] . "</td>";
+        echo "<td>" . $row["remarks"] . "</td>";
+        
+        echo "<div id='modal" . $row["id"] . "' class='modal'>";
+        generateModalContent($row);
+        echo "</div>";
+      }
+      echo "</table>";
+  } else {
+        echo "Done Reviewing! No  More Pending Leave Requests. <span style='font-size:100px; display: block;'>&#128378;</span>";
+    }
+  ?>
+</div>
+
+<div id="Approved" class="tabcontent">
+  <h3>Approved Leave Requests</h3>
+  <?php
+  $sql = "SELECT * FROM jcleavetable WHERE updateStatus = 'Approved'";
+  $result = $conn->query($sql);
+
+  if ($result->num_rows > 0) {
+      echo "<table>";
+      echo "<tr><th>ID</th><th>Date Filed</th><th>Emp ID</th><th>Employee</th><th>Company</th><th>Absence</th><th>Leave Type</th><th>Start Date</th><th>End Date</th><th>Total Hours</th><th>Leave Pay</th><th>Update Status</th><th>Remarks</th></tr>";
+      while ($row = $result->fetch_assoc()) {
+        echo "<tr>";
+        echo "<td>" . $row["id"] . "</td>";
+        echo "<td>" . $row["dateToday"] . "</td>";
+        echo "<td><a href='javascript:void(0);' onclick='openViewModal(\"modal" . $row["id"] . "\")'>" . $row["empId"] . "</a></td>";
+        echo "<td>" . $row["fName"] . ' ' . $row['mName'] . ' ' . $row['lName'] . ' ' . $row['sName'];  "</td>";
+        echo "<td>" . $row["company"] . "</td>";
+        echo "<td>" . $row["absenceType"] . "</td>";
+        echo "<td>" . $row["leaveType"] . "</td>";
+        echo "<td>" . $row["startDate"] . "</td>";
+        echo "<td>" . $row["endDate"] . "</td>";
+        echo "<td>" . $row["dayToHrs"] . "</td>";
+        echo "<td>" . $row["pay"] . "</td>";
+        echo "<td>" . $row["updateStatus"] . "</td>";
+        echo "<td>" . $row["remarks"] . "</td>";
+        
+        echo "<div id='modal" . $row["id"] . "' class='modal'>";
+        generateModalContentApprovedRejected($row);
+        echo "</div>";
+      }
+      echo "</table>";
+  } else {
+      echo "No Approved Leave Requests. Check Pending!";
+  }
+  ?>
+</div>
+
+<div id="Rejected" class="tabcontent">
+  <h3>Rejected Leave Requests</h3>
+  <?php
+  $sql = "SELECT * FROM jcleavetable WHERE updateStatus = 'Rejected'";
+  $result = $conn->query($sql);
+
+  if ($result->num_rows > 0) {
+      echo "<table>";
+      echo "<tr><th>ID</th><th>Date Filed</th><th>Emp ID</th><th>Employee</th><th>Company</th><th>Absence</th><th>Leave Type</th><th>Start Date</th><th>End Date</th><th>Total Hours</th><th>Leave Pay</th><th>Update Status</th><th>Remarks</th></tr>";
+      while ($row = $result->fetch_assoc()) {
+        echo "<tr>";
+        echo "<td>" . $row["id"] . "</td>";
+        echo "<td>" . $row["dateToday"] . "</td>";
+        echo "<td><a href='javascript:void(0);' onclick='openViewModal(\"modal" . $row["id"] . "\")'>" . $row["empId"] . "</a></td>";
+        echo "<td>" . $row["fName"] . ' ' . $row['mName'] . ' ' . $row['lName'] . ' ' . $row['sName'];  "</td>";
+        echo "<td>" . $row["company"] . "</td>";
+        echo "<td>" . $row["absenceType"] . "</td>";
+        echo "<td>" . $row["leaveType"] . "</td>";
+        echo "<td>" . $row["startDate"] . "</td>";
+        echo "<td>" . $row["endDate"] . "</td>";
+        echo "<td>" . $row["dayToHrs"] . "</td>";
+        echo "<td>" . $row["pay"] . "</td>";
+        echo "<td>" . $row["updateStatus"] . "</td>";
+        echo "<td>" . $row["remarks"] . "</td>";
+        
+        echo "<div id='modal" . $row["id"] . "' class='modal'>";
+        generateModalContentApprovedRejected($row);
+        echo "</div>";
+      }
+      echo "</table>";
+  } else {
+      echo "No Rejected Leave Requests. Check Pending!";
+  }
+  ?>
+</div>
+
+
+<script>
+function openTab(evt, tabName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Show the default tab
+document.getElementById("Pending").style.display = "block";
+document.querySelector(".tab button").classList.add("active");
+
+function openViewModal(modalId) {
+        // Open the modal
+        document.getElementById(modalId).style.display = "block";
+    }
+
+    function closeViewModal(modalId) {
+        // Close the modal 
+        document.getElementById(modalId).style.display = "none";
+    }
+</script>
+
 </body>
 </html>
