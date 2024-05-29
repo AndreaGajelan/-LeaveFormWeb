@@ -1,38 +1,37 @@
 <?php 
-require 'db.php';
+require 'db.php'; 
+
 if(isset($_POST["submit"])){
     $empId = $_POST["empId"];
     $password = $_POST["password"];
-    $result = mysqli_query($conn, "SELECT * FROM form WHERE empId = '$empId'");
+    $result = mysqli_query($conn, "SELECT * FROM emp WHERE empId = '$empId'");
     $row = mysqli_fetch_assoc($result);
     if(mysqli_num_rows($result) > 0){
         if($password == $row["password"]){
             $_SESSION["login"] = true;
             $_SESSION["id"] = $row["id"];
-            header("Location: empDashboard.php");
+            if($row["type"] == "admin"){
+                header("Location: admin-panel.php");
+            } else {
+                header("Location: empDashboard.php");
+            }
         }
         else{
-            echo "<script> alert('Wrong Password Register');</script>";
+            echo "<script> alert('Wrong Password.');</script>";
         }
     }
     else{
-        echo "<script> alert('User Not Register');</script>";
+        echo "<script> alert('User Not Found.');</script>";
     }
-
 }
-
-
-
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login</title> 
     <link rel="stylesheet" href="login.css">
 </head>
 <body>
@@ -43,8 +42,8 @@ if(isset($_POST["submit"])){
             </div>
 
             <div class="user-container">
-                <label>Enter ID</label>
-                <input type="text" name="empId" placeholder="Enter your Email" oninput="this.value = this.value.toUpperCase()"> <!-- added name="username" -->
+                <label>Username</label>
+                <input type="text" name="empId" placeholder="Enter your Email" > <!-- added name="username" -->
             </div>
             
             <div class="pass-container">
@@ -57,7 +56,7 @@ if(isset($_POST["submit"])){
             </div>
 
             <div class="signup-container">
-                <p>Don't you have and account?</p>
+                <p>Don't have an account?</p>
                 <a class="signup" href="register.php">Sign Up here!</a>
             </div>
             
